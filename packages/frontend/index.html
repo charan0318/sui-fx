@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUI-FX Testnet Faucet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #1976d2;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        .status-badge.offline {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-badge.offline .status-dot {
+            background: #f44336;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+
+        input.valid {
+            border-color: #4caf50;
+        }
+
+        input.invalid {
+            border-color: #f44336;
+        }
+
+        .validation-message {
+            margin-top: 8px;
+            font-size: 0.9em;
+            display: none;
+        }
+
+        .validation-message.error {
+            color: #f44336;
+        }
+
+        .validation-message.success {
+            color: #4caf50;
+        }
+
+        .amount-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .amount-info h3 {
+            color: #1976d2;
+            margin-bottom: 5px;
+        }
+
+        .request-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1976d2, #1565c0);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .request-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(25, 118, 210, 0.3);
+        }
+
+        .request-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.success {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+        }
+
+        .result.error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+        }
+
+        .result h4 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .result-info {
+            margin: 10px 0;
+        }
+
+        .result-info strong {
+            display: inline-block;
+            width: 120px;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #1565c0;
+        }
+
+        .rate-limit-info {
+            background: #fff3e0;
+            border: 1px solid #ff9800;
+            color: #ef6c00;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+        }
+
+        .rate-limit-info h4 {
+            margin-bottom: 10px;
+        }
+
+        .rate-limit-info ul {
+            margin-left: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .footer a {
+            color: #1976d2;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌊 SUI-FX</h1>
+            <p>Testnet Faucet</p>
+            <div id="statusBadge" class="status-badge">
+                <div class="status-dot"></div>
+                <span>Checking status...</span>
+            </div>
+        </div>
+
+        <div class="rate-limit-info">
+            <h4>⏱️ Rate Limits</h4>
+            <ul>
+                <li>1 request per hour per wallet address</li>
+                <li>100 requests per hour per IP address</li>
+            </ul>
+        </div>
+
+        <div class="amount-info">
+            <h3>💰 Amount per Request</h3>
+            <p><strong>0.1 SUI</strong> (100,000,000 mist)</p>
+        </div>
+
+        <form id="faucetForm">
+            <div class="form-group">
+                <label for="walletAddress">SUI Wallet Address</label>
+                <input 
+                    type="text" 
+                    id="walletAddress" 
+                    placeholder="0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                    maxlength="66"
+                >
+                <div id="validationMessage" class="validation-message"></div>
+            </div>
+
+            <button type="submit" id="requestBtn" class="request-btn">
+                <div id="loadingSpinner" class="loading-spinner"></div>
+                <span id="btnText">🚀 Request Tokens</span>
+            </button>
+        </form>
+
+        <div id="result" class="result">
+            <h4 id="resultTitle"></h4>
+            <div id="resultContent"></div>
+        </div>
+
+        <div class="footer">
+            <a href="http://localhost:3001/docs" target="_blank">📚 API Docs</a>
+            <a href="http://localhost:3001/api/v1/health" target="_blank">🔍 Health Check</a>
+            <a href="https://suiscan.xyz/testnet" target="_blank">🔗 Sui Explorer</a>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:3001';
+        const API_KEY = 'suisuisui';
+
+        // DOM elements
+        const form = document.getElementById('faucetForm');
+        const walletInput = document.getElementById('walletAddress');
+        const validationMessage = document.getElementById('validationMessage');
+        const requestBtn = document.getElementById('requestBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const btnText = document.getElementById('btnText');
+        const result = document.getElementById('result');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultContent = document.getElementById('resultContent');
+        const statusBadge = document.getElementById('statusBadge');
+
+        // Wallet address validation
+        const SUI_ADDRESS_REGEX = /^(0x)?[0-9a-fA-F]{64}$/;
+
+        function validateAddress(address) {
+            if (!address) {
+                return { valid: false, message: 'Please enter a wallet address' };
+            }
+            
+            if (!SUI_ADDRESS_REGEX.test(address)) {
+                return { 
+                    valid: false, 
+                    message: 'Invalid address format. Must be 64 hex characters with optional 0x prefix' 
+                };
+            }
+            
+            return { valid: true, message: '✓ Valid SUI address format' };
+        }
+
+        function normalizeAddress(address) {
+            // Remove 0x prefix if present, then add it back
+            const cleanAddress = address.replace(/^0x/, '');
+            return `0x${cleanAddress}`;
+        }
+
+        // Real-time validation
+        walletInput.addEventListener('input', function() {
+            const validation = validateAddress(this.value);
+            
+            if (this.value === '') {
+                this.className = '';
+                validationMessage.style.display = 'none';
+                return;
+            }
+            
+            if (validation.valid) {
+                this.className = 'valid';
+                validationMessage.className = 'validation-message success';
+                validationMessage.textContent = validation.message;
+            } else {
+                this.className = 'invalid';
+                validationMessage.className = 'validation-message error';
+                validationMessage.textContent = validation.message;
+            }
+            
+            validationMessage.style.display = 'block';
+        });
+
+        // Check API status
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy') {
+                    statusBadge.className = 'status-badge';
+                    statusBadge.innerHTML = '<div class="status-dot"></div><span>🟢 Online - Sui Testnet</span>';
+                } else {
+                    statusBadge.className = 'status-badge offline';
+                    statusBadge.innerHTML = '<div class="status-dot"></div><span>🟡 Degraded Service</span>';
+                }
+            } catch (error) {
+                statusBadge.className = 'status-badge offline';
+                statusBadge.innerHTML = '<div class="status-dot"></div><span>🔴 Offline</span>';
+            }
+        }
+
+        // Copy to clipboard function
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                setTimeout(() => {
+                    button.textContent = originalText;
+                }, 2000);
+            });
+        }
+
+        // Show result
+        function showResult(success, title, content) {
+            result.className = `result ${success ? 'success' : 'error'}`;
+            resultTitle.textContent = title;
+            resultContent.innerHTML = content;
+            result.style.display = 'block';
+            result.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const address = walletInput.value.trim();
+            const validation = validateAddress(address);
+            
+            if (!validation.valid) {
+                showResult(false, '❌ Invalid Address', validation.message);
+                return;
+            }
+
+            // Show loading state
+            requestBtn.disabled = true;
+            loadingSpinner.style.display = 'inline-block';
+            btnText.textContent = 'Requesting tokens...';
+            result.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/faucet/request`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        walletAddress: normalizeAddress(address)
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Success
+                    const { transactionHash, amount, explorerUrl } = data.data;
+                    const content = `
+                        <div class="result-info">
+                            <strong>Amount:</strong> 0.1 SUI
+                        </div>
+                        <div class="result-info">
+                            <strong>Transaction:</strong> 
+                            <span style="font-family: monospace; font-size: 0.9em;">${transactionHash}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('${transactionHash}', this)">Copy</button>
+                        </div>
+                        <div class="result-info">
+                            <strong>Wallet:</strong> 
+                            <span style="font-family: monospace; font-size: 0.9em;">${normalizeAddress(address)}</span>
+                        </div>
+                        <div class="result-info">
+                            <strong>Explorer:</strong> 
+                            <a href="${explorerUrl}" target="_blank" style="color: #1976d2;">View on SuiScan</a>
+                        </div>
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(76, 175, 80, 0.1); border-radius: 5px;">
+                            <strong>✅ Tokens sent successfully!</strong><br>
+                            <small>Check your wallet in a few moments.</small>
+                        </div>
+                    `;
+                    showResult(true, '🎉 Transaction Successful!', content);
+                } else {
+                    // API returned error
+                    const errorMsg = data.message || data.error?.details || 'Unknown error occurred';
+                    showResult(false, '❌ Request Failed', `
+                        <p><strong>Error:</strong> ${errorMsg}</p>
+                        ${data.error?.code ? `<p><strong>Code:</strong> ${data.error.code}</p>` : ''}
+                        <div style="margin-top: 15px; padding: 10px; background: rgba(244, 67, 54, 0.1); border-radius: 5px;">
+                            <strong>💡 Tips:</strong><br>
+                            • Wait 1 hour between requests to the same wallet<br>
+                            • Check your address format<br>
+                            • Try again in a few minutes
+                        </div>
+                    `);
+                }
+            } catch (error) {
+                // Network or other error
+                showResult(false, '🔌 Connection Error', `
+                    <p><strong>Error:</strong> Failed to connect to the faucet service</p>
+                    <p><strong>Details:</strong> ${error.message}</p>
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(244, 67, 54, 0.1); border-radius: 5px;">
+                        <strong>💡 Possible solutions:</strong><br>
+                        • Check if the backend is running<br>
+                        • Verify the API URL is correct<br>
+                        • Check your internet connection<br>
+                        • Try refreshing the page
+                    </div>
+                `);
+            } finally {
+                // Reset loading state
+                requestBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+                btnText.textContent = '🚀 Request Tokens';
+            }
+        });
+
+        // Initialize
+        checkStatus();
+        
+        // Check status every 30 seconds
+        setInterval(checkStatus, 30000);
+    </script>
+</body>
+</html>

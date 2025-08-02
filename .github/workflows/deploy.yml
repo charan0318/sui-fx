@@ -1,0 +1,106 @@
+name: 🚀 Deploy to EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+        type: choice
+        options:
+          - main
+          - develop
+          - feature/discord-bot
+          - hotfix
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+
+jobs:
+  deploy:
+    name: 🚀 Deploy to EC2
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: |
+          npm ci
+          npm run build --workspaces
+
+      - name: 🧪 Run Tests
+        run: |
+          npm test --workspaces --if-present
+
+      - name: 🚀 Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            echo "🚀 Deploying ${{ github.event.inputs.branch }} to ${{ github.event.inputs.environment }}..."
+            
+            cd /opt/sui-faucet/sui-faucet-core
+            
+            # Backup current version
+            sudo cp -r . ../sui-faucet-core-backup-$(date +%Y%m%d-%H%M%S) || true
+            
+            # Pull latest code from selected branch
+            git fetch origin
+            git checkout ${{ github.event.inputs.branch }}
+            git pull origin ${{ github.event.inputs.branch }}
+            
+            # Install dependencies and build
+            npm ci
+            cd packages/backend && npm run build
+            cd ../discord-bot && npm run build
+            
+            # Restart services
+            pm2 restart sui-faucet || pm2 start ecosystem.config.cjs --env production
+            pm2 restart sui-faucet-discord-bot || pm2 start ecosystem.config.cjs --env production
+            pm2 save
+            
+            # Health check
+            sleep 10
+            curl -f http://localhost:3001/api/v1/health
+            
+            echo "✅ Deployment completed!"
+            pm2 status
+
+      - name: 📊 Deployment Summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: ${{ github.event.inputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Quick Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [API Health](http://13.211.123.118/api/v1/health)" >> $GITHUB_STEP_SUMMARY
+          echo "- [API Docs](http://13.211.123.118/api-docs/)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Faucet Endpoint](http://13.211.123.118/api/v1/faucet/request)" >> $GITHUB_STEP_SUMMARY
+
+      - name: 🚨 Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Please check the logs and consider rolling back if necessary."

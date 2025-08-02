@@ -1,0 +1,37 @@
+{
+  "name": "sui-fx",
+  "version": "2.0.0",
+  "description": "SUI-FX: Modern Sui blockchain faucet with enhanced features and production-ready architecture",
+  "private": true,
+  "workspaces": [
+    "src/*",
+    "src/bots/*",
+    "src/lib/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspaces",
+    "start": "npm run start --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "setup": "node -e \"console.log('Run: .\\\\scripts\\\\devops\\\\setup.bat (Windows) or ./scripts/devops/setup.sh (Linux/Mac)')\"",
+    "db:setup": "psql $DB_URL < scripts/devops/create-original-schema.sql",
+    "backend:dev": "npm run dev --workspace=src/backend",
+    "backend:start": "npm run start --workspace=src/backend",
+    "discord:dev": "npm run dev --workspace=src/bots/discord",
+    "discord:start": "npm run start --workspace=src/bots/discord",
+    "docker:up": "docker-compose -f infra/docker/docker-compose.yml up -d",
+    "docker:down": "docker-compose -f infra/docker/docker-compose.yml down",
+    "docker:logs": "docker-compose -f infra/docker/docker-compose.yml logs -f"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0",
+    "nodemon": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
