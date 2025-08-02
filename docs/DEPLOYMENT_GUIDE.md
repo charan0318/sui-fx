@@ -1,53 +1,34 @@
-# Sui Faucet Deployment Guide
+# 🚀 SUI-FX Deployment Guide
 
-This guide walks you through deploying the Sui Faucet application using Terraform and GitHub Actions CI/CD.
+<p align="center">
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white" alt="AWS"/>
+  <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions"/>
+  <img src="https://img.shields.io/badge/Terraform-623CE4?style=for-the-badge&logo=terraform&logoColor=white" alt="Terraform"/>
+</p>
 
-## Prerequisites
+**Complete production deployment guide for SUI-FX testnet faucet - from development to production-ready infrastructure.**
 
-### Required Tools
-- [AWS CLI](https://aws.amazon.com/cli/) v2.x
-- [Terraform](https://www.terraform.io/) v1.6+
-- [Docker](https://www.docker.com/) v20+
-- [Node.js](https://nodejs.org/) v18+
-- Git
+---
 
-### Required Accounts
-- AWS Account with appropriate permissions
-- GitHub Account with repository access
-- Domain name (optional, for custom domain)
+## 📋 Deployment Options
 
-## Quick Start
+### 🏆 Recommended: Docker Compose (Easiest)
+- **Best for**: Small to medium deployments, VPS, dedicated servers
+- **Time to deploy**: 5-10 minutes
+- **Cost**: $5-50/month depending on server size
 
-### 1. Clone Repository
-```bash
-git clone https://github.com/your-org/sui-fx.git
-cd sui-fx
-```
+### ☁️ Advanced: AWS Cloud Infrastructure  
+- **Best for**: High-availability, scalable production deployments
+- **Time to deploy**: 30-60 minutes
+- **Cost**: $50-200/month depending on usage
 
-### 2. Bootstrap Terraform State Management
-```bash
-# Configure AWS credentials
-aws configure
+### 🔧 Developer: Local Development
+- **Best for**: Development, testing, contribution
+- **Time to setup**: 2-5 minutes
+- **Cost**: Free
 
-# Run bootstrap script
-./scripts/bootstrap-terraform.sh
-```
-
-### 3. Configure GitHub Secrets
-Follow the [GitHub Secrets Setup Guide](./GITHUB_SECRETS_SETUP.md) to configure all required secrets.
-
-### 4. Deploy Infrastructure
-```bash
-# Push to main branch to trigger deployment
-git push origin main
-
-# Or manually trigger via GitHub Actions
-# Go to Actions tab → Terraform Apply → Run workflow
-```
-
-### 5. Deploy Application
-```bash
-# Application deployment happens automatically after infrastructure
+---
 # Or manually trigger via GitHub Actions
 # Go to Actions tab → Deploy Application → Run workflow
 ```

@@ -79,8 +79,21 @@ class SuiService {
 
   // Compatibility methods for existing code
   async getWalletBalance(): Promise<bigint> {
-    // Return a placeholder balance since we're using official faucet
-    return BigInt('1000000000000'); // 1000 SUI placeholder
+    try {
+      if (!this.isInitialized) {
+        throw new Error('Sui service not initialized');
+      }
+      
+      // Get actual balance from the blockchain
+      const balance = await this.client.getBalance({
+        owner: this.walletAddress,
+      });
+      
+      return BigInt(balance.totalBalance);
+    } catch (error: any) {
+      logger.error('Failed to get wallet balance:', error.message);
+      throw new Error(`Failed to get wallet balance: ${error.message}`);
+    }
   }
 
   async getWalletInfo(): Promise<WalletInfo> {

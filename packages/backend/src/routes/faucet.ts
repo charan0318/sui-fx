@@ -110,6 +110,8 @@ interface FaucetResponse {
   retryAfter?: number;
   walletAddress?: string;
   faucetAddress?: string;
+  explorerUrl?: string;
+  network?: string;
   error?: {
     code: string;
     details?: string;
@@ -288,6 +290,7 @@ router.post('/request',
         }
 
         const amountInSui = Number(amountToSend) / 1_000_000_000;
+        const explorerUrl = `https://suiscan.xyz/testnet/tx/${result.transactionHash}`;
 
         return res.status(200).json({
           success: true,
@@ -296,6 +299,8 @@ router.post('/request',
           message: `✅ Successfully sent ${amountInSui} SUI to ${validAddress}`,
           walletAddress: validAddress,
           faucetAddress: suiService.faucetAddress,
+          explorerUrl: explorerUrl,
+          network: 'testnet'
         });
 
       } else {

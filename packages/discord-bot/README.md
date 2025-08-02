@@ -1,29 +1,46 @@
-# 🤖 Sui Faucet Discord Bot
+# 🤖 SUI-FX Discord Bot
 
-A Discord bot that allows users to request SUI testnet tokens directly from Discord using slash commands.
+<p align="center">
+  <img src="https://img.shields.io/badge/Discord-Bot-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord Bot"/>
+  <img src="https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+</p>
+
+**Professional Discord bot integration for SUI-FX testnet faucet - Request SUI tokens directly from Discord servers with slash commands.**
+
+---
 
 ## ✨ Features
 
-- 🚰 **Request SUI tokens** via `/faucet` command
-- 📊 **Check faucet status** with `/status` command
-- ❓ **Get help** with `/help` command
-- 🛡️ **Rate limiting** to prevent abuse
-- 👑 **Admin commands** for bot management
-- 🔄 **Auto health monitoring** with alerts
-- 📝 **Comprehensive logging**
+- 🚰 **Instant Token Requests** - `/faucet` command for immediate SUI token distribution
+- 📊 **Status Monitoring** - `/status` command to check faucet health and user limits
+- ❓ **Interactive Help** - `/help` command with comprehensive usage information
+- 🛡️ **Advanced Rate Limiting** - Shared limits across web and Discord interfaces
+- 👑 **Admin Commands** - Server management tools for administrators
+- 🔄 **Auto Health Monitoring** - Continuous health checks with automated alerts
+- 📝 **Comprehensive Logging** - Detailed logging for debugging and analytics
+- 🌐 **Multi-Server Support** - Deploy to multiple Discord servers simultaneously
 
-## 🚀 Commands
+---
 
-### User Commands
-- `/faucet <address>` - Request SUI testnet tokens
-- `/status` - Check faucet status and your limits
-- `/help` - Show help information
+## 🚀 Commands Overview
 
-### Admin Commands (Requires Administrator permission)
-- `/admin stats` - View detailed statistics
-- `/admin clear-limits <user>` - Clear rate limits for a user
-- `/admin clear-all-limits` - Clear all rate limits
-- `/admin health` - Check detailed health status
+### 👥 User Commands
+| Command | Description | Usage Example |
+|---------|-------------|---------------|
+| `/faucet <address>` | Request SUI testnet tokens | `/faucet 0x1a2b3c4d5e6f...` |
+| `/status` | Check faucet status and your limits | `/status` |
+| `/help` | Show help information and available commands | `/help` |
+
+### 👑 Admin Commands (Requires Administrator Permission)
+| Command | Description | Access Level |
+|---------|-------------|--------------|
+| `/admin stats` | View detailed faucet statistics | Administrator |
+| `/admin clear-limits <user>` | Clear rate limits for specific user | Administrator |
+| `/admin clear-all-limits` | Clear all rate limits | Administrator |
+| `/admin health` | Check detailed system health status | Administrator |
+
+---
 
 ## 📋 Prerequisites
 

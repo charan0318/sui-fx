@@ -1,13 +1,22 @@
-# 🌊 Sui Faucet API Documentation
+# 📖 SUI-FX API Documentation
 
-**Base URL:** `http://13.211.123.118`
+<p align="center">
+  <img src="https://img.shields.io/badge/API-v1.0.0-blue?style=for-the-badge" alt="API Version"/>
+  <img src="https://img.shields.io/badge/REST-API-green?style=for-the-badge" alt="REST API"/>
+  <img src="https://img.shields.io/badge/JSON-Response-orange?style=for-the-badge" alt="JSON Response"/>
+</p>
 
-## 📋 Table of Contents
-- [Public Endpoints](#public-endpoints)
-- [Faucet Endpoints](#faucet-endpoints)
-- [Admin Endpoints](#admin-endpoints)
-- [Authentication](#authentication)
-- [Error Codes](#error-codes)
+**Complete REST API reference for SUI-FX testnet faucet integration**
+
+---
+
+## 🌐 Base Information
+
+- **Base URL**: `https://your-faucet-domain.com` (replace with your deployed URL)
+- **API Version**: `v1`
+- **Content Type**: `application/json`
+- **Authentication**: API Key required (Header: `X-API-Key`)
+- **Rate Limiting**: Applied per IP and per wallet address
 
 ---
 

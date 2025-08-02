@@ -1,37 +1,76 @@
 {
   "name": "sui-fx",
-  "version": "2.0.0",
-  "description": "SUI-FX: Modern Sui blockchain faucet with enhanced features and production-ready architecture",
+  "version": "1.0.0",
+  "description": "🌊 SUI-FX - Professional Sui testnet faucet with modern web interface, Discord bot integration, and comprehensive developer tools",
+  "homepage": "https://github.com/charan0318/sui-fx",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/charan0318/sui-fx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/charan0318/sui-fx/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "SUI-FX Contributors",
+    "url": "https://github.com/charan0318/sui-fx/graphs/contributors"
+  },
+  "keywords": [
+    "sui",
+    "blockchain",
+    "testnet",
+    "faucet",
+    "web3",
+    "cryptocurrency",
+    "discord-bot",
+    "api",
+    "docker",
+    "typescript",
+    "react",
+    "nodejs"
+  ],
   "private": true,
   "workspaces": [
-    "src/*",
-    "src/bots/*",
-    "src/lib/*"
+    "packages/*"
   ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
-    "build": "npm run build --workspaces",
-    "dev": "npm run dev --workspaces",
-    "start": "npm run start --workspaces",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "clean": "npm run clean --workspaces && rm -rf node_modules",
-    "setup": "node -e \"console.log('Run: .\\\\scripts\\\\devops\\\\setup.bat (Windows) or ./scripts/devops/setup.sh (Linux/Mac)')\"",
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
+    "start": "concurrently \"npm run backend:start\" \"npm run frontend:start\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
+    "build": "npm run backend:build && npm run frontend:build",
+    "test": "npm run backend:test && npm run frontend:test",
+    "lint": "npm run backend:lint && npm run frontend:lint",
+    "clean": "npm run backend:clean && npm run frontend:clean && rm -rf node_modules",
+    "setup": "npm install && npm run backend:setup && npm run frontend:setup",
+    "backend:dev": "cd packages/backend && npm run dev",
+    "backend:start": "cd packages/backend && npm run start",
+    "backend:build": "cd packages/backend && npm run build",
+    "backend:test": "cd packages/backend && npm run test",
+    "backend:lint": "cd packages/backend && npm run lint",
+    "backend:clean": "cd packages/backend && npm run clean",
+    "backend:setup": "cd packages/backend && npm install && npm run build",
+    "frontend:dev": "cd packages/frontend && npm run dev",
+    "frontend:start": "cd packages/frontend && npm run start",
+    "frontend:build": "cd packages/frontend && npm run build",
+    "frontend:test": "cd packages/frontend && npm run test || echo 'No tests configured'",
+    "frontend:lint": "cd packages/frontend && npm run lint || echo 'No lint configured'",
+    "frontend:clean": "cd packages/frontend && npm run clean || echo 'No clean script'",
+    "frontend:setup": "cd packages/frontend && npm install",
+    "discord:dev": "cd packages/discord-bot && npm run dev",
+    "discord:start": "cd packages/discord-bot && npm run start",
     "db:setup": "psql $DB_URL < scripts/devops/create-original-schema.sql",
-    "backend:dev": "npm run dev --workspace=src/backend",
-    "backend:start": "npm run start --workspace=src/backend",
-    "discord:dev": "npm run dev --workspace=src/bots/discord",
-    "discord:start": "npm run start --workspace=src/bots/discord",
-    "docker:up": "docker-compose -f infra/docker/docker-compose.yml up -d",
-    "docker:down": "docker-compose -f infra/docker/docker-compose.yml down",
-    "docker:logs": "docker-compose -f infra/docker/docker-compose.yml logs -f"
+    "docker:up": "docker-compose -f docker-compose.yml up -d",
+    "docker:down": "docker-compose -f docker-compose.yml down",
+    "docker:logs": "docker-compose -f docker-compose.yml logs -f"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0",
     "tsx": "^4.0.0",
-    "nodemon": "^3.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "nodemon": "^3.0.0",
+    "concurrently": "^8.2.2"
   }
 }

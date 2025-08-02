@@ -1,33 +1,49 @@
-# 🔒 Security Guidelines
+# 🔒 SUI-FX Security Policy
 
-## 🚨 **NEVER COMMIT THESE FILES:**
+<p align="center">
+  <img src="https://img.shields.io/badge/Security-First-red?style=for-the-badge" alt="Security First"/>
+  <img src="https://img.shields.io/badge/OWASP-Compliant-blue?style=for-the-badge" alt="OWASP Compliant"/>
+  <img src="https://img.shields.io/badge/Vulnerability-Response-green?style=for-the-badge" alt="Vulnerability Response"/>
+</p>
 
-### **🔑 Private Keys & Secrets:**
+## 🎯 Security Overview
+
+SUI-FX is built with security as a fundamental principle. This document outlines our security practices, policies, and guidelines for safe deployment and operation.
+
+---
+
+## 🚨 Critical Security Rules
+
+### 🔑 **NEVER COMMIT THESE FILES:**
+
+#### **Private Keys & Secrets:**
 - ❌ `.env` files with real values
-- ❌ `*.key`, `*.pem` files
-- ❌ `wallet.json`, `keystore.json`
-- ❌ `mnemonic.txt`
+- ❌ `*.key`, `*.pem`, `*.p12` files  
+- ❌ `wallet.json`, `keystore.json`, `sui.keystore`
+- ❌ `mnemonic.txt`, seed phrases
 - ❌ Discord bot tokens
-- ❌ Database connection strings
-- ❌ API keys
+- ❌ Database connection strings with credentials
+- ❌ API keys, JWT secrets
+- ❌ SSL certificates and private keys
 
-### **📊 Sensitive Data:**
-- ❌ `dump.sql`, `backup.sql`
-- ❌ Database files (`*.db`, `*.sqlite`)
-- ❌ Log files with user data
-- ❌ Configuration files with secrets
+#### **Sensitive Data:**
+- ❌ `dump.sql`, `backup.sql` with real data
+- ❌ Database files (`*.db`, `*.sqlite`) with user data
+- ❌ Log files containing personal information
+- ❌ Configuration files with production secrets
+- ❌ User wallet addresses or transaction data
 
-## ✅ **SAFE TO COMMIT:**
+### ✅ **SAFE TO COMMIT:**
 
-### **📝 Template Files:**
-- ✅ `.env.example`
+#### **Template & Documentation Files:**
+- ✅ `.env.example` (with placeholder values)
 - ✅ `config.template.json`
-- ✅ Documentation
-- ✅ Source code (without secrets)
+- ✅ Documentation and README files
+- ✅ Source code (without embedded secrets)
+- ✅ Test files with mock data only
+- ✅ Docker configurations (without secrets)
 
-## 🛡️ **SECURITY BEST PRACTICES:**
-
-### **1. Environment Variables:**
+---
 ```bash
 # ✅ Good - Use .env.example as template
 cp .env.example .env

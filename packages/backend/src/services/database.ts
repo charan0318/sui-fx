@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
 import { config } from '../config/index.js';
 import { logger } from '../utils/logger.js';
+import { sqliteService } from './sqlite.js';
 
 // Database interfaces
 export interface TransactionRecord {
@@ -53,6 +54,7 @@ export interface AdminUser {
 
 class DatabaseService {
   private pool: Pool | null = null;
+  private usingSQLite = false;
 
   constructor() {
     // Initialize PostgreSQL connection pool
@@ -63,10 +65,31 @@ class DatabaseService {
       // Skip database connection if DATABASE_URL is not properly configured or is default
       const dbUrl = config.database.url;
       if (!dbUrl || dbUrl === 'postgresql://localhost/suifaucet') {
-        logger.info('Database URL not configured - running without database');
+        logger.info('PostgreSQL URL not configured - trying SQLite fallback');
+        const sqliteConnected = await sqliteService.connect();
+        if (sqliteConnected) {
+          this.usingSQLite = true;
+          logger.info('✅ Using SQLite database successfully');
+        } else {
+          logger.info('Database URL not configured - running without database');
+        }
         return;
       }
 
+      // Check if it's a SQLite URL
+      if (dbUrl.startsWith('sqlite:')) {
+        logger.info('SQLite URL detected - using SQLite database');
+        const sqliteConnected = await sqliteService.connect();
+        if (sqliteConnected) {
+          this.usingSQLite = true;
+          logger.info('✅ SQLite database connected successfully');
+        } else {
+          logger.warn('SQLite connection failed, continuing without database');
+        }
+        return;
+      }
+
+      // Try PostgreSQL connection
       this.pool = new Pool({
         connectionString: config.database.url,
         ssl: config.database.ssl ? { rejectUnauthorized: false } : false,
@@ -85,12 +108,26 @@ class DatabaseService {
       });
     } catch (error: any) {
       logger.error('Database connection failed', { error: error.message });
-      logger.warn('Database connection failed, continuing without database', { error: error.message });
-      this.pool = null;
+      
+      // Try SQLite fallback
+      logger.info('Trying SQLite fallback...');
+      const sqliteConnected = await sqliteService.connect();
+      if (sqliteConnected) {
+        this.usingSQLite = true;
+        logger.info('✅ Fallback to SQLite database successful');
+      } else {
+        logger.warn('Database connection failed, continuing without database', { error: error.message });
+        this.pool = null;
+      }
     }
   }
 
   async disconnect(): Promise<void> {
+    if (this.usingSQLite) {
+      await sqliteService.disconnect();
+      this.usingSQLite = false;
+    }
+    
     if (!this.pool) return;
 
     try {
@@ -104,10 +141,14 @@ class DatabaseService {
   }
 
   isConnected(): boolean {
-    return this.pool !== null;
+    return this.pool !== null || this.usingSQLite;
   }
 
   async query(text: string, params?: any[]): Promise<any> {
+    if (this.usingSQLite) {
+      return await sqliteService.query(text, params);
+    }
+    
     if (!this.pool) {
       throw new Error('Database not connected');
     }
@@ -123,6 +164,12 @@ class DatabaseService {
 
   async initialize(): Promise<void> {
     try {
+      // Skip table creation for SQLite as tables are already created
+      if (this.usingSQLite) {
+        logger.info('Using SQLite - skipping PostgreSQL table initialization');
+        return;
+      }
+      
       // Create transactions table
       await this.query(`
         CREATE TABLE IF NOT EXISTS transactions (
@@ -257,18 +304,18 @@ class DatabaseService {
   async saveTransaction(transaction: TransactionRecord): Promise<number> {
     const result = await this.query(`
       INSERT INTO transactions (
-        request_id, wallet_address, amount, transaction_hash,
-        status, error_message, ip_address, user_agent, created_at
+        request_id, recipient_address, amount, transaction_hash,
+        status, error_message, request_ip, user_agent, created_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING id
     `, [
       transaction.request_id,
-      transaction.wallet_address,
+      transaction.wallet_address, // Maps to recipient_address in database
       transaction.amount,
       transaction.transaction_hash,
       transaction.status,
       transaction.error_message,
-      transaction.ip_address,
+      transaction.ip_address, // Maps to request_ip in database
       transaction.user_agent,
       transaction.created_at
     ]);
@@ -278,7 +325,18 @@ class DatabaseService {
 
   async getTransactions(limit: number = 100, offset: number = 0): Promise<TransactionRecord[]> {
     const result = await this.query(`
-      SELECT * FROM transactions
+      SELECT 
+        id,
+        request_id,
+        recipient_address as wallet_address,
+        amount,
+        transaction_hash,
+        status,
+        error_message,
+        request_ip as ip_address,
+        user_agent,
+        created_at
+      FROM transactions
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2
     `, [limit, offset]);
@@ -297,7 +355,7 @@ class DatabaseService {
         COUNT(*) as total,
         SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
         SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-        SUM(CASE WHEN status = 'success' THEN amount::BIGINT ELSE 0 END) as totalAmount
+        SUM(CASE WHEN status = 'success' THEN CAST(amount AS INTEGER) ELSE 0 END) as totalAmount
       FROM transactions
     `);
 
@@ -306,7 +364,7 @@ class DatabaseService {
       total: parseInt(stats.total) || 0,
       successful: parseInt(stats.successful) || 0,
       failed: parseInt(stats.failed) || 0,
-      totalAmount: (stats.totalamount || '0').toString(),
+      totalAmount: (stats.totalAmount || stats.totalamount || '0').toString(),
     };
   }
 

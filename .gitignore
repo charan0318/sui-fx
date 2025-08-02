@@ -1,4 +1,41 @@
-# Node modules
+# SUI-FX .gitignore
+# Comprehensive ignore file for Node.js, TypeScript, React, and production deployments
+
+# =====================================
+# 🔒 CRITICAL: NEVER COMMIT SECRETS
+# =====================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+config.json
+secrets.json
+
+# Private keys and certificates
+*.key
+*.pem
+*.p12
+*.crt
+*.csr
+wallet.json
+keystore.json
+sui.keystore
+mnemonic.txt
+seed.txt
+
+# Database files with real data
+*.db
+*.sqlite
+*.sqlite3
+dump.sql
+backup.sql
+database.json
+
+# =====================================
+# 📦 Dependencies
+# =====================================
 node_modules/
 
 # Build output
