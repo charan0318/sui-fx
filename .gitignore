@@ -33,6 +33,10 @@ dump.sql
 backup.sql
 database.json
 
+# Large installer files
+postgresql-installer.exe
+*.exe
+
 # =====================================
 # 📦 Dependencies
 # =====================================
