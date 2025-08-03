@@ -17,6 +17,12 @@ export default function Status() {
     refetchInterval: 30000,
   });
 
+  // Get network info for block height
+  const { data: networkInfo } = useQuery<any>({
+    queryKey: ["/api/network"],
+    refetchInterval: 30000,
+  });
+
   const navItems = [
     { name: 'Home', url: '/', icon: ArrowLeft },
     { name: 'Faucet', url: '/faucet', icon: Droplets },
@@ -25,30 +31,25 @@ export default function Status() {
     { name: 'Status', url: '/status', icon: Activity }
   ];
 
+  // Use real data from API
   const services = [
     {
       name: "API Server",
       icon: Server,
-      status: "operational",
-      responseTime: "45ms",
+      status: stats?.data?.services?.api || "loading",
+      responseTime: "45ms", // Could be made dynamic
     },
     {
       name: "Database",
       icon: Database,
-      status: "operational",
-      responseTime: "12ms",
+      status: stats?.data?.services?.database || "loading",
+      responseTime: "12ms", // Could be made dynamic
     },
     {
       name: "SUI Network",
       icon: LinkIcon,
-      status: "operational",
-      blockHeight: "#123456",
-    },
-    {
-      name: "Security",
-      icon: ShieldCheck,
-      status: "operational",
-      ssl: "Valid",
+      status: stats?.data?.services?.suiNetwork || "loading",
+      blockHeight: networkInfo?.blockHeight ? `#${networkInfo.blockHeight}` : "Loading...",
     },
   ];
 
@@ -122,8 +123,7 @@ export default function Status() {
           </div>
 
           {/* Service Status */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {services.map((service, index) => {
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">{services.map((service, index) => {
               const IconComponent = service.icon;
               return (
                 <motion.div
@@ -155,7 +155,6 @@ export default function Status() {
                       <p className="text-xs text-gray-400 font-inter">
                         {service.responseTime && `Response time: ${service.responseTime}`}
                         {service.blockHeight && `Block height: ${service.blockHeight}`}
-                        {service.ssl && `SSL: ${service.ssl}`}
                       </p>
                     </CardContent>
                   </Card>
@@ -185,16 +184,20 @@ export default function Status() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-green-400 mb-2 font-space-grotesk">99.9%</div>
+                    <div className="text-3xl font-bold text-green-400 mb-2 font-space-grotesk">
+                      {stats?.success ? stats.data.uptime : "Loading..."}
+                    </div>
                     <div className="text-sm text-gray-400 font-inter">Uptime (30 days)</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-400 mb-2 font-space-grotesk">156ms</div>
+                    <div className="text-3xl font-bold text-blue-400 mb-2 font-space-grotesk">
+                      156ms
+                    </div>
                     <div className="text-sm text-gray-400 font-inter">Avg Response Time</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-purple-400 mb-2 font-space-grotesk">
-                      {stats?.success ? stats.data.successRate : "98.5%"}
+                      {stats?.success ? stats.data.successRate : "Loading..."}
                     </div>
                     <div className="text-sm text-gray-400 font-inter">Success Rate</div>
                   </div>
@@ -225,15 +228,15 @@ export default function Status() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-400 mb-2 font-space-grotesk">{stats.data.totalRequests}</div>
+                      <div className="text-2xl font-bold text-blue-400 mb-2 font-space-grotesk">{stats.data.totalTransactions}</div>
                       <div className="text-sm text-gray-400 font-inter">Total Requests</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-green-400 mb-2 font-space-grotesk">{stats.data.successfulRequests}</div>
+                      <div className="text-2xl font-bold text-green-400 mb-2 font-space-grotesk">{stats.data.successfulTransactions}</div>
                       <div className="text-sm text-gray-400 font-inter">Successful Requests</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-400 mb-2 font-space-grotesk">{stats.data.totalDistributed} SUI</div>
+                      <div className="text-2xl font-bold text-purple-400 mb-2 font-space-grotesk">{stats.data.totalAmountDistributed} SUI</div>
                       <div className="text-sm text-gray-400 font-inter">Total Distributed</div>
                     </div>
                     <div className="text-center">

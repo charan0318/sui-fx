@@ -117,8 +117,8 @@ class SuiService {
       const { databaseService } = await import('./database.js');
 
       const query = `
-        SELECT setting_value FROM rate_limit_settings
-        WHERE setting_name = 'faucet_mode' AND is_active = true
+        SELECT setting_value FROM settings
+        WHERE setting_name = 'faucet_mode'
       `;
       const result = await databaseService.query(query);
 

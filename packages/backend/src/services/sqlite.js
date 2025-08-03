@@ -1,11 +1,7 @@
-// SQLite Database Service for SUI-FX
+// Simple SQLite Database Service for SUI-FX (PostgreSQL removed)
 import Database from 'better-sqlite3';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { logger } from '../utils/logger.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 class SQLiteService {
   constructor() {
@@ -19,6 +15,7 @@ class SQLiteService {
       logger.info(`Connecting to SQLite database at: ${dbPath}`);
       this.db = new Database(dbPath);
       this.connected = true;
+      await this.initializeTables();
       logger.info('✅ SQLite database connected successfully');
       return true;
     } catch (error) {
@@ -26,6 +23,67 @@ class SQLiteService {
       this.connected = false;
       return false;
     }
+  }
+
+  async initializeTables() {
+    if (!this.db) return;
+
+    const tables = [
+      // Transactions table
+      `CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        wallet_address TEXT NOT NULL,
+        amount TEXT NOT NULL,
+        transaction_hash TEXT,
+        success BOOLEAN NOT NULL,
+        error_message TEXT,
+        ip_address TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Daily metrics table
+      `CREATE TABLE IF NOT EXISTS faucet_metrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL UNIQUE,
+        total_requests INTEGER DEFAULT 0,
+        successful_requests INTEGER DEFAULT 0,
+        failed_requests INTEGER DEFAULT 0,
+        total_amount_distributed TEXT DEFAULT '0',
+        unique_users INTEGER DEFAULT 0,
+        rate_limit_errors INTEGER DEFAULT 0,
+        network_errors INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Settings table
+      `CREATE TABLE IF NOT EXISTS settings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        setting_name TEXT NOT NULL UNIQUE,
+        setting_value TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`,
+
+      // Admin users table
+      `CREATE TABLE IF NOT EXISTS admin_users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        email TEXT,
+        role TEXT NOT NULL DEFAULT 'admin',
+        is_active BOOLEAN NOT NULL DEFAULT 1,
+        last_login DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`
+    ];
+
+    for (const sql of tables) {
+      this.db.exec(sql);
+    }
+    logger.info('SQLite tables initialized');
   }
 
   isConnected() {
@@ -40,8 +98,8 @@ class SQLiteService {
     }
   }
 
-  // Query method to mimic PostgreSQL interface
-  async query(text, params = []) {
+  // Simple query method for SQLite
+  query(text, params = []) {
     if (!this.isConnected()) {
       throw new Error('Database not connected');
     }
@@ -50,88 +108,40 @@ class SQLiteService {
       // Convert PostgreSQL $1, $2, $3 placeholders to SQLite ? placeholders
       let sqliteQuery = text.replace(/\$(\d+)/g, '?');
       
+      // Replace PostgreSQL NOW() with SQLite CURRENT_TIMESTAMP
+      sqliteQuery = sqliteQuery.replace(/NOW\(\)/g, "datetime('now')");
+      
+      // Replace PostgreSQL UPSERT with SQLite INSERT OR REPLACE
+      sqliteQuery = sqliteQuery.replace(/ON CONFLICT.*DO UPDATE SET/g, 'ON CONFLICT DO UPDATE SET');
+      
       // Handle SELECT queries
       if (sqliteQuery.trim().toUpperCase().startsWith('SELECT')) {
         const stmt = this.db.prepare(sqliteQuery);
         const rows = stmt.all(params);
-        return { rows };
+        return { rows, rowCount: rows.length };
       }
       
       // Handle INSERT/UPDATE/DELETE queries
-      if (sqliteQuery.includes('RETURNING')) {
-        // Split the query to remove RETURNING clause
-        const parts = sqliteQuery.split(/RETURNING\s+\*/i);
-        const insertQuery = parts[0].trim();
-        
-        const stmt = this.db.prepare(insertQuery);
-        const result = stmt.run(params);
-        
-        // Get the inserted record
-        if (result.lastInsertRowid) {
-          // Extract table name from INSERT statement
-          const tableMatch = insertQuery.match(/INSERT INTO (\w+)/i);
-          if (tableMatch) {
-            const tableName = tableMatch[1];
-            const selectStmt = this.db.prepare(`SELECT * FROM ${tableName} WHERE rowid = ?`);
-            const rows = [selectStmt.get(result.lastInsertRowid)];
-            return { rows };
-          }
-        }
-        
-        return { rows: [], rowCount: result.changes };
-      }
-      
-      // Regular INSERT/UPDATE/DELETE without RETURNING
       const stmt = this.db.prepare(sqliteQuery);
       const result = stmt.run(params);
-      
       return { 
         rows: [], 
         rowCount: result.changes,
         insertId: result.lastInsertRowid 
       };
+      
     } catch (error) {
-      logger.error('SQLite query error:', error);
-      throw error;
-    }
-  }
-
-  // Specific method for API clients
-  async createApiClient(clientData) {
-    const {
-      name,
-      description,
-      homepage_url,
-      callback_url,
-      client_id,
-      client_secret,
-      api_key
-    } = clientData;
-
-    const query = `
-      INSERT INTO api_clients (
-        id, name, description, homepage_url, callback_url,
-        client_id, client_secret, api_key, is_active, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
-    `;
-
-    const id = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    try {
-      await this.query(query, [
-        id, name, description, homepage_url, callback_url,
-        client_id, client_secret, api_key
-      ]);
-
-      // Return the created client
-      const selectQuery = `SELECT * FROM api_clients WHERE client_id = ?`;
-      const result = await this.query(selectQuery, [client_id]);
-      return result.rows[0];
-    } catch (error) {
-      logger.error('Error creating API client:', error);
+      logger.error('SQLite query error:', { 
+        query: text, 
+        params, 
+        error: error.message,
+        code: error.code 
+      });
       throw error;
     }
   }
 }
 
+// Export singleton instance
 export const sqliteService = new SQLiteService();
+export default SQLiteService;

@@ -353,9 +353,9 @@ class DatabaseService {
     const result = await this.query(`
       SELECT
         COUNT(*) as total,
-        SUM(CASE WHEN success = 1 THEN 1 ELSE 0 END) as successful,
-        SUM(CASE WHEN success = 0 THEN 1 ELSE 0 END) as failed,
-        SUM(CASE WHEN success = 1 THEN CAST(amount AS INTEGER) ELSE 0 END) as totalAmount
+        SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
+        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+        SUM(CASE WHEN status = 'success' THEN CAST(amount AS INTEGER) ELSE 0 END) as totalAmount
       FROM transactions
     `);
 
