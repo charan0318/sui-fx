@@ -39,7 +39,7 @@
   },
   "scripts": {
     "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
-    "start": "concurrently \"npm run backend:start\" \"npm run frontend:start\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
+    "start": "concurrently \"BACKEND_PORT=3003 npm run backend:start\" \"npm run frontend:start\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
     "build": "npm run backend:build && npm run frontend:build",
     "test": "npm run backend:test && npm run frontend:test",
     "lint": "npm run backend:lint && npm run frontend:lint",
