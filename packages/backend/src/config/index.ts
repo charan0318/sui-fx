@@ -97,7 +97,7 @@ export const config: FaucetConfig = {
     adminPassword: process.env['ADMIN_PASSWORD'] || 'adminsuisuisui',
   },
   server: {
-    port: parseInt(process.env['PORT'] || '3001'),
+    port: parseInt(process.env['BACKEND_PORT'] || '3003'),
     corsOrigins: parseCorsOrigins(process.env['CORS_ORIGINS']),
     requestTimeout: parseInt(process.env['REQUEST_TIMEOUT'] || '30000'), // 30 seconds
     environment: (process.env['NODE_ENV'] as 'development' | 'production' | 'test') || 'development',
