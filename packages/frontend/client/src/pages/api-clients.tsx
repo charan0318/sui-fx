@@ -86,21 +86,50 @@ export default function ApiClients() {
       return response;
     },
     onSuccess: (response) => {
-      console.log('Registration successful:', response);
+      console.log('Registration successful - Full response:', response);
       
-      // More robust data extraction
+      // More robust data extraction with detailed logging
       let clientData;
-      if (response.success && response.data) {
-        clientData = response.data;
-      } else if (response.client_id) {
-        // Direct response format
-        clientData = response;
+      
+      if (response && typeof response === 'object') {
+        if (response.success === true && response.data) {
+          console.log('Using response.data:', response.data);
+          clientData = response.data;
+        } else if (response.client_id && response.api_key) {
+          console.log('Using direct response:', response);
+          clientData = response;
+        } else if (response.data && response.data.client_id) {
+          console.log('Using nested data:', response.data);
+          clientData = response.data;
+        } else {
+          console.error('Unexpected response format. Response keys:', Object.keys(response));
+          console.error('Full response:', JSON.stringify(response, null, 2));
+          // Fallback - try to extract any available data
+          clientData = response.data || response;
+        }
       } else {
-        console.error('Unexpected response format:', response);
-        clientData = response;
+        console.error('Invalid response type:', typeof response, response);
+        clientData = {};
       }
       
-      console.log('Extracted client data:', clientData);
+      console.log('Final clientData:', clientData);
+      
+      // Validate we have the required fields
+      if (!clientData.client_id || !clientData.api_key) {
+        console.error('Missing required fields:', {
+          hasClientId: !!clientData.client_id,
+          hasApiKey: !!clientData.api_key,
+          clientData
+        });
+        
+        toast({
+          title: "Registration Issue",
+          description: "API client was created but response data is incomplete. Please check the browser console.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setRegistrationResult(clientData);
       setShowSuccessModal(true);
       form.reset();
