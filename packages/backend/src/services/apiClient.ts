@@ -79,18 +79,18 @@ class ApiClientService {
 
       const credentials = this.generateClientCredentials();
       
-      const query = `
+      // For SQLite, we need to handle INSERT and SELECT separately since RETURNING is not supported
+      const insertQuery = `
         INSERT INTO api_clients (
           name, description, homepage_url, callback_url, 
           client_id, client_secret, api_key, rate_limit_override
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        RETURNING *
       `;
 
       const values = [
         data.name.trim(),
         data.description?.trim() || null,
-        data.homepage_url || null,
+        data.homepage_url || null,  
         data.callback_url || null,
         credentials.client_id,
         credentials.client_secret,
@@ -98,8 +98,17 @@ class ApiClientService {
         data.rate_limit_override || null
       ];
 
-      const result = await databaseService.query(query, values);
-      const client = result.rows ? result.rows[0] : result[0];
+      // Insert the client
+      await databaseService.query(insertQuery, values);
+      
+      // Get the inserted client by client_id
+      const selectQuery = `SELECT * FROM api_clients WHERE client_id = $1`;
+      const result = await databaseService.query(selectQuery, [credentials.client_id]);
+      const client = result[0];
+
+      if (!client) {
+        throw new Error('Failed to retrieve created API client');
+      }
 
       logger.info('API client created', {
         client_id: client.client_id,

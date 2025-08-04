@@ -115,16 +115,19 @@ export default function ApiClients() {
       console.log('Final clientData:', clientData);
       
       // Validate we have the required fields
-      if (!clientData.client_id || !clientData.api_key) {
-        console.error('Missing required fields:', {
-          hasClientId: !!clientData.client_id,
-          hasApiKey: !!clientData.api_key,
-          clientData
+      if (!clientData || !clientData.client_id || !clientData.api_key) {
+        console.error('Missing required fields after parsing:', {
+          hasClientData: !!clientData,
+          hasClientId: !!(clientData && clientData.client_id),
+          hasApiKey: !!(clientData && clientData.api_key),
+          clientIdValue: clientData?.client_id,
+          apiKeyValue: clientData?.api_key ? '[PRESENT]' : '[MISSING]',
+          allKeys: clientData ? Object.keys(clientData) : 'no data'
         });
         
         toast({
           title: "Registration Issue",
-          description: "API client was created but response data is incomplete. Please check the browser console.",
+          description: `API client was created but response data is incomplete. Missing: ${!clientData?.client_id ? 'Client ID ' : ''}${!clientData?.api_key ? 'API Key' : ''}`,
           variant: "destructive",
         });
         return;
