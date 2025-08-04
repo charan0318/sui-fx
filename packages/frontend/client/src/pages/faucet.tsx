@@ -94,11 +94,50 @@ export default function Faucet() {
     },
     onError: (error: any) => {
       console.error("Faucet error:", error);
-      const errorMessage = error.message || "Failed to process token request";
-      setLastTransaction({ success: false, message: errorMessage });
+      
+      // Parse error response for better UX
+      let errorTitle = "Request Failed";
+      let errorDescription = "Failed to process token request";
+      
+      try {
+        // Check if error message contains JSON (like 429: {...})
+        const jsonMatch = error.message.match(/\d+:\s*(\{.*\})/);
+        if (jsonMatch) {
+          const errorData = JSON.parse(jsonMatch[1]);
+          
+          if (errorData.error?.code === 'RATE_LIMIT_EXCEEDED') {
+            errorTitle = "Rate Limit Exceeded";
+            const waitTime = Math.ceil((errorData.retryAfter || 3600) / 60); // Convert to minutes
+            errorDescription = `Please wait ${waitTime} minutes before requesting again. Each wallet can request SUI tokens once per hour.`;
+          } else if (errorData.error?.code === 'INVALID_API_KEY') {
+            errorTitle = "Authentication Error";
+            errorDescription = "Unable to authenticate with the faucet service. Please try again later.";
+          } else if (errorData.message) {
+            errorDescription = errorData.message.replace(/🚫\s*/, ''); // Remove emoji prefix
+          }
+        } else if (error.message.includes('Rate limit')) {
+          errorTitle = "Too Many Requests";
+          errorDescription = "Please wait before making another request.";
+        } else if (error.message.includes('Invalid')) {
+          errorTitle = "Invalid Request";
+          errorDescription = error.message;
+        } else {
+          errorDescription = error.message;
+        }
+      } catch (parseError) {
+        // Fallback to original error message if parsing fails
+        errorDescription = error.message || "Failed to process token request";
+      }
+      
+      setLastTransaction({ 
+        success: false, 
+        message: errorDescription,
+        title: errorTitle 
+      });
+      
       toast({
-        title: "Request Failed",
-        description: errorMessage,
+        title: errorTitle,
+        description: errorDescription,
         variant: "destructive",
       });
     },

@@ -7,7 +7,11 @@ import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/co                  <Input
+                    readOnly
+                    value={registrationResult?.api_key || 'Loading...'}
+                    className="bg-gray-800/50 border-gray-600 text-white font-mono text-sm"
+                  />nts/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -87,10 +91,21 @@ export default function ApiClients() {
     },
     onSuccess: (response) => {
       console.log('Registration successful:', response);
-      // Extract the actual client data from the response
-      const data = response.success ? response.data : response;
-      console.log('Extracted data:', data);
-      setRegistrationResult(data);
+      
+      // More robust data extraction
+      let clientData;
+      if (response.success && response.data) {
+        clientData = response.data;
+      } else if (response.client_id) {
+        // Direct response format
+        clientData = response;
+      } else {
+        console.error('Unexpected response format:', response);
+        clientData = response;
+      }
+      
+      console.log('Extracted client data:', clientData);
+      setRegistrationResult(clientData);
       setShowSuccessModal(true);
       form.reset();
       toast({
@@ -459,7 +474,7 @@ export default function ApiClients() {
                 <div className="flex items-center space-x-2">
                   <Input
                     readOnly
-                    value={registrationResult.client_id || 'Loading...'}
+                    value={registrationResult?.client_id || 'Loading...'}
                     className="bg-gray-800/50 border-gray-600 text-white font-mono text-sm"
                   />
                   <Button

@@ -386,19 +386,31 @@ const navItems = [
           </>
         )}
         
-        {/* Debug info - remove in production */}
-        {!dashboardData && (
+        {/* Loading and Error States */}
+        {isLoading && (
           <div className="text-center text-gray-400 mt-8">
-            <p>Loading dashboard data...</p>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400"></div>
+              <p>Loading dashboard data...</p>
+            </div>
+          </div>
+        )}
+        
+        {!isLoading && !dashboardData && (
+          <div className="text-center text-yellow-400 mt-8">
+            <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4 max-w-md mx-auto">
+              <p className="font-medium">Dashboard Unavailable</p>
+              <p className="text-sm text-gray-300 mt-2">Unable to load dashboard data. Please check if the admin service is properly configured.</p>
+            </div>
           </div>
         )}
         
         {dashboardData && !dashboardData.success && (
           <div className="text-center text-red-400 mt-8">
-            <p>Error loading dashboard data</p>
-            <pre className="text-xs mt-2 text-left bg-gray-800 p-4 rounded overflow-auto">
-              {JSON.stringify(dashboardData, null, 2)}
-            </pre>
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 max-w-md mx-auto">
+              <p className="font-medium">Dashboard Error</p>
+              <p className="text-sm text-gray-300 mt-2">Failed to load dashboard data. Please try refreshing the page or contact support.</p>
+            </div>
           </div>
         )}
       </div>
