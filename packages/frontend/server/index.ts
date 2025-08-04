@@ -4,15 +4,19 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
-// Proxy API requests to backend
+// Proxy API requests to backend BEFORE other middleware
 app.use('/api', createProxyMiddleware({
   target: 'http://localhost:3003',
   changeOrigin: true,
-  logLevel: 'debug'
+  logLevel: 'debug',
+  onError: (err, req, res) => {
+    console.error('Proxy Error:', err);
+    res.status(500).json({ error: 'Backend connection failed' });
+  }
 }));
+
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
