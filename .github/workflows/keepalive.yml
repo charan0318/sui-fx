@@ -1,0 +1,112 @@
+name: 🌊 Keep SUI-FX Faucet Alive
+on:
+  schedule:
+    # Ping every 10 minutes to prevent Render cold starts
+    # GitHub Actions cron runs in UTC
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    # Allow manual triggering for testing
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: 🏥 Health Check
+        run: |
+          echo "🔍 Checking SUI-FX Faucet health..."
+          
+          # Get health status with timeout
+          response=$(timeout 30 curl -s -f https://suifx.onrender.com/api/v1/health || echo "FAILED")
+          
+          if [[ "$response" == "FAILED" ]]; then
+            echo "❌ Health check failed - service may be cold starting"
+            # Don't fail the job immediately, try keepalive instead
+          else
+            echo "✅ Health check passed"
+            # Extract service statuses if response is valid JSON
+            if echo "$response" | jq empty 2>/dev/null; then
+              echo "📊 Service Status:"
+              echo "$response" | jq -r '.services // {} | to_entries[] | "  \(.key): \(.value)"' || true
+            fi
+          fi
+
+      - name: 🔄 Keepalive Ping  
+        run: |
+          echo "🚀 Sending keepalive ping to wake up service..."
+          
+          # Multiple attempts with increasing delays
+          for attempt in 1 2 3; do
+            echo "  Attempt $attempt/3..."
+            
+            response=$(timeout 45 curl -s -f \
+              -H "User-Agent: GitHub-Actions-Keepalive/1.0" \
+                            https://suifx.onrender.com/api/v1/keepalive || echo "FAILED"))
+            
+            if [[ "$response" != "FAILED" ]]; then
+              echo "✅ Keepalive successful on attempt $attempt"
+              
+              # Extract and display info if valid JSON
+              if echo "$response" | jq empty 2>/dev/null; then
+                uptime=$(echo "$response" | jq -r '.uptimeFormatted // "unknown"')
+                memory=$(echo "$response" | jq -r '.memory.used // "unknown"')
+                status=$(echo "$response" | jq -r '.status // "unknown"')
+                echo "  📊 Status: $status"
+                echo "  ⏱️  Uptime: $uptime"
+                echo "  🧠 Memory: ${memory}MB"
+              fi
+              break
+            else
+              echo "  ⚠️ Attempt $attempt failed"
+              if [[ $attempt -lt 3 ]]; then
+                echo "  ⏳ Waiting $(($attempt * 15)) seconds before retry..."
+                sleep $(($attempt * 15))
+              fi
+            fi
+          done
+          
+          if [[ "$response" == "FAILED" ]]; then
+            echo "❌ All keepalive attempts failed"
+            exit 1
+          fi
+
+      - name: 🧪 Quick API Test
+        run: |
+          echo "🧪 Testing faucet API responsiveness..."
+          
+          # Test with an invalid request to verify API is responding
+          http_code=$(timeout 30 curl -s -w "%{http_code}" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: keepalive-test" \
+            -H "User-Agent: GitHub-Actions-HealthCheck/1.0" \
+            -d '{"address":"invalid-test-address"}' \
+            https://suifx.onrender.com/api/v1/faucet/request \
+            -o /dev/null || echo "000")
+          
+          # We expect 400 (bad request) or 401 (invalid key) - both mean API is alive
+          case $http_code in
+            400|401|429)
+              echo "✅ Faucet API is responding (HTTP $http_code)"
+              ;;
+            200)
+              echo "🎉 Unexpected success - API is definitely alive! (HTTP $http_code)"
+              ;;
+            000)
+              echo "⚠️ Connection timeout - service may still be starting up"
+              ;;
+            *)
+              echo "⚠️ Unexpected response: HTTP $http_code (but service is reachable)"
+              ;;
+          esac
+
+      - name: 📝 Success Summary
+        run: |
+          echo ""
+          echo "🎉 SUI-FX Faucet keepalive completed successfully!"
+          echo "⏰ Next ping in 10 minutes"
+          echo "🌐 Service URL: https://suifx.onrender.com"
+          echo "📊 Monitoring Dashboard: https://suifx.onrender.com/api/v1/status"
+          echo ""
+          echo "This keeps your Render service warm and prevents cold starts! 🔥"
