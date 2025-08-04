@@ -513,13 +513,13 @@ export default function ApiClients() {
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-4">
                   <pre className="text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap">
-                    <code>{`curl -X POST "http://localhost:3002/api/v1/faucet/request" \\
+                    <code>{`curl -X POST "http://localhost:3003/api/v1/faucet/request" \\
   -H "X-API-Key: ${registrationResult.api_key || 'your-api-key'}" \\
   -H "Content-Type: application/json" \\
   -d '{"address": "0x64char_hex_wallet_address"}'`}</code>
                   </pre>
                   <Button
-                    onClick={() => copyToClipboard(`curl -X POST "http://localhost:3002/api/v1/faucet/request" \\
+                    onClick={() => copyToClipboard(`curl -X POST "http://localhost:3003/api/v1/faucet/request" \\
   -H "X-API-Key: ${registrationResult.api_key}" \\
   -H "Content-Type: application/json" \\
   -d '{"address": "0x64char_hex_wallet_address"}'`, "Integration Code")}
