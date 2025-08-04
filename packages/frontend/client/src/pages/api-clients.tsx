@@ -7,11 +7,7 @@ import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/co                  <Input
-                    readOnly
-                    value={registrationResult?.api_key || 'Loading...'}
-                    className="bg-gray-800/50 border-gray-600 text-white font-mono text-sm"
-                  />nts/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
