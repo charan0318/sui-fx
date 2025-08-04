@@ -22,15 +22,17 @@ export async function apiRequest(
   if (url.startsWith('http')) {
     fullUrl = url;
   } else if (url.startsWith('/api/v1/')) {
-    // Remove /api/v1/ prefix and append to API_BASE_URL
-    const path = url.replace('/api/v1/', '');
-    fullUrl = `${API_BASE_URL}/${path}`;
+    // URL already has /api/v1/ prefix, use as-is
+    fullUrl = url;
   } else if (url.startsWith('/api/')) {
-    // Remove /api/ prefix and append to API_BASE_URL  
-    const path = url.replace('/api/', '');
-    fullUrl = `${API_BASE_URL}/${path}`;
-  } else {
+    // URL has /api/ prefix, use as-is
+    fullUrl = url;
+  } else if (url.startsWith('/')) {
+    // Absolute path starting with /, prepend API_BASE_URL
     fullUrl = `${API_BASE_URL}${url}`;
+  } else {
+    // Relative path, prepend API_BASE_URL with /
+    fullUrl = `${API_BASE_URL}/${url}`;
   }
   
   const headers: Record<string, string> = {
