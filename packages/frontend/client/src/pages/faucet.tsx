@@ -246,7 +246,7 @@ export default function Faucet() {
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-center space-x-3">
-                                  <span>SEND 1 SUI</span>
+                                  <span>Send 0.1 SUI</span>
                                   <ArrowRight className="w-5 h-5" />
                                 </div>
                               )}

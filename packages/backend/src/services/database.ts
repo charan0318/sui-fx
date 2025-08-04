@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 import bcrypt from 'bcrypt';
 import { config } from '../config/index.js';
 import { logger } from '../utils/logger.js';
-import { sqliteService } from './sqlite.js';
+import { databaseService as sqliteService } from './database-sqlite.js';
 
 // Database interfaces
 export interface TransactionRecord {
@@ -66,8 +66,8 @@ class DatabaseService {
       const dbUrl = config.database.url;
       if (!dbUrl || dbUrl === 'postgresql://localhost/suifaucet') {
         logger.info('PostgreSQL URL not configured - trying SQLite fallback');
-        const sqliteConnected = await sqliteService.connect();
-        if (sqliteConnected) {
+        await sqliteService.connect();
+        if (sqliteService.connected) {
           this.usingSQLite = true;
           logger.info('✅ Using SQLite database successfully');
         } else {
@@ -79,8 +79,8 @@ class DatabaseService {
       // Check if it's a SQLite URL
       if (dbUrl.startsWith('sqlite:')) {
         logger.info('SQLite URL detected - using SQLite database');
-        const sqliteConnected = await sqliteService.connect();
-        if (sqliteConnected) {
+        await sqliteService.connect();
+        if (sqliteService.connected) {
           this.usingSQLite = true;
           logger.info('✅ SQLite database connected successfully');
         } else {
@@ -111,8 +111,8 @@ class DatabaseService {
       
       // Try SQLite fallback
       logger.info('Trying SQLite fallback...');
-      const sqliteConnected = await sqliteService.connect();
-      if (sqliteConnected) {
+      await sqliteService.connect();
+      if (sqliteService.connected) {
         this.usingSQLite = true;
         logger.info('✅ Fallback to SQLite database successful');
       } else {
@@ -487,6 +487,12 @@ class DatabaseService {
 
   // Admin activity methods
   async saveAdminActivity(activity: AdminActivity): Promise<number> {
+    // Route to SQLite service if using SQLite
+    if (this.usingSQLite) {
+      await sqliteService.saveAdminActivity(activity);
+      return 1; // Return a dummy ID for compatibility
+    }
+    
     const result = await this.query(`
       INSERT INTO admin_activities (
         admin_username, action, details, ip_address, created_at
@@ -552,6 +558,11 @@ class DatabaseService {
 
   async authenticateAdmin(username: string, password: string): Promise<AdminUser | null> {
     try {
+      // Route to SQLite service if using SQLite
+      if (this.usingSQLite) {
+        return await sqliteService.authenticateAdmin(username, password);
+      }
+      
       const result = await this.query(
         'SELECT * FROM admin_users WHERE username = $1 AND is_active = true',
         [username]

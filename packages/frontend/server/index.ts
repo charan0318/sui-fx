@@ -7,10 +7,10 @@ const app = express();
 
 // Proxy API requests to backend BEFORE other middleware
 app.use('/api', createProxyMiddleware({
-  target: 'http://localhost:3003',
+  target: 'http://localhost:3003/api',
   changeOrigin: true,
   logLevel: 'debug',
-  onError: (err, req, res) => {
+  onError: (err: any, req: any, res: any) => {
     console.error('Proxy Error:', err);
     res.status(500).json({ error: 'Backend connection failed' });
   }

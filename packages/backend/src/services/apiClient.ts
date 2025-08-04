@@ -99,7 +99,7 @@ class ApiClientService {
       ];
 
       const result = await databaseService.query(query, values);
-      const client = result.rows[0];
+      const client = result.rows ? result.rows[0] : result[0];
 
       logger.info('API client created', {
         client_id: client.client_id,
@@ -126,7 +126,7 @@ class ApiClientService {
       const query = 'SELECT * FROM api_clients WHERE api_key = $1 AND is_active = true';
       const result = await databaseService.query(query, [apiKey]);
       
-      return result.rows[0] || null;
+      return (result.rows ? result.rows[0] : result[0]) || null;
     } catch (error) {
       logger.error('Failed to get client by API key', { error: error.message });
       return null;
@@ -145,7 +145,7 @@ class ApiClientService {
       const query = 'SELECT * FROM api_clients WHERE client_id = $1';
       const result = await databaseService.query(query, [clientId]);
       
-      return result.rows[0] || null;
+      return (result.rows ? result.rows[0] : result[0]) || null;
     } catch (error) {
       logger.error('Failed to get client by ID', { error: error.message });
       return null;
@@ -168,7 +168,7 @@ class ApiClientService {
       `;
       const result = await databaseService.query(query, [limit, offset]);
       
-      return result.rows;
+      return result.rows || result;
     } catch (error) {
       logger.error('Failed to list clients', { error: error.message });
       return [];
