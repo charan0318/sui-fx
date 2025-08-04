@@ -16,6 +16,7 @@ import { metricsRoutes } from './routes/metrics.js';
 import { docsRoutes } from './routes/docs.js';
 import statsRoutes from './routes/stats.js';
 import apiClientRoutes from './routes/apiClients.js';
+import { networkRoutes } from './routes/network.js';
 import { redisClient } from './services/redis.js';
 import { suiService } from './services/sui.js';
 import { databaseService } from './services/database.js';
@@ -131,6 +132,7 @@ app.use('/api/v1/clients', apiClientRoutes);
 app.use('/api/v1/metrics', metricsRoutes);
 app.use('/api/v1/docs', docsRoutes);
 app.use('/api/v1/stats', statsRoutes);
+app.use('/api/v1/network', networkRoutes);
 
 // Health endpoint
 app.get('/api/v1/health', async (_req, res) => {

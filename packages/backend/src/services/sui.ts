@@ -451,6 +451,40 @@ class SuiService {
       walletAddress: this.walletAddress,
     };
   }
+
+  async getNetworkStatus(): Promise<{
+    network: string;
+    blockHeight: string;
+    latency: number;
+    status: string;
+  }> {
+    try {
+      const start = Date.now();
+      
+      // Get latest system state (includes epoch info)
+      const systemState = await this.client.getLatestSuiSystemState();
+      const latency = Date.now() - start;
+      
+      // For SUI, we use epoch instead of block height
+      const blockHeight = `Epoch ${systemState.epoch}`;
+      
+      return {
+        network: config.sui.network,
+        blockHeight,
+        latency,
+        status: 'operational'
+      };
+    } catch (error) {
+      logger.error('Failed to get network status:', error);
+      
+      return {
+        network: config.sui.network,
+        blockHeight: 'Unknown',
+        latency: 0,
+        status: 'error'
+      };
+    }
+  }
 }
 
 export const suiService = new SuiService();

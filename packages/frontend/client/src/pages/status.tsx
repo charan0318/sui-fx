@@ -19,7 +19,7 @@ export default function Status() {
 
   // Get network info for block height
   const { data: networkInfo } = useQuery<any>({
-    queryKey: ["/api/network"],
+    queryKey: ["/api/v1/network"],
     refetchInterval: 30000,
   });
 
@@ -31,13 +31,13 @@ export default function Status() {
     { name: 'Status', url: '/status', icon: Activity }
   ];
 
-  // Use real data from API
+  // Use real data from API - Ordered: SUI Network (left), Database (center), API Server (right)
   const services = [
     {
-      name: "API Server",
-      icon: Server,
-      status: stats?.data?.services?.api || "loading",
-      responseTime: "45ms", // Could be made dynamic
+      name: "SUI Network",
+      icon: LinkIcon,
+      status: stats?.data?.services?.suiNetwork || "loading",
+      blockHeight: networkInfo?.data?.blockHeight || "Loading...",
     },
     {
       name: "Database",
@@ -46,10 +46,10 @@ export default function Status() {
       responseTime: "12ms", // Could be made dynamic
     },
     {
-      name: "SUI Network",
-      icon: LinkIcon,
-      status: stats?.data?.services?.suiNetwork || "loading",
-      blockHeight: networkInfo?.blockHeight ? `#${networkInfo.blockHeight}` : "Loading...",
+      name: "API Server",
+      icon: Server,
+      status: stats?.data?.services?.api || "loading",
+      responseTime: "45ms", // Could be made dynamic
     },
   ];
 
