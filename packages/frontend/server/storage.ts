@@ -72,7 +72,7 @@ export class MemStorage implements IStorage {
     const faucetRequest: FaucetRequest = {
       id,
       ...request,
-      amount: "100000000", // 0.1 SUI in mist
+      amount: "1000000", // 0.001 SUI in mist
       transactionHash: null,
       status: "pending",
       createdAt: new Date(),

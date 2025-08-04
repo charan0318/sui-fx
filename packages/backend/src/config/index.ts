@@ -78,7 +78,7 @@ export const config: FaucetConfig = {
     network: (process.env['SUI_NETWORK'] as 'testnet' | 'devnet') || 'testnet',
     rpcUrl: process.env['SUI_RPC_URL'] || 'https://fullnode.testnet.sui.io/',
     privateKey: process.env['SUI_PRIVATE_KEY'] || '',
-    defaultAmount: process.env['SUI_DEFAULT_AMOUNT'] || '100000000', // 0.1 SUI
+    defaultAmount: process.env['SUI_DEFAULT_AMOUNT'] || '1000000', // 0.001 SUI
     maxAmount: process.env['SUI_MAX_AMOUNT'] || '5000000000',
     minWalletBalance: process.env['SUI_MIN_WALLET_BALANCE'] || '10000000000',
   },

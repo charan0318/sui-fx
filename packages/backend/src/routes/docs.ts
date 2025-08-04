@@ -28,7 +28,7 @@ router.get('/', (req: Request, res: Response) => {
             success: true,
             message: '✅ Tokens sent successfully!',
             transactionHash: '0x...',
-            amount: '1000000000'
+            amount: '1000000'
           }
         }
       },

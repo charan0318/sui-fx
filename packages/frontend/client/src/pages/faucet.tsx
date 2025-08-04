@@ -266,7 +266,7 @@ export default function Faucet() {
                           <div className="flex items-center justify-between p-4 bg-gray-800/30 rounded-lg">
                             <span className="text-gray-300 font-inter">Amount per request:</span>
                             <Badge variant="secondary" className="bg-blue-500/20 text-blue-300">
-                              0.1 SUI
+                              0.001 SUI
                             </Badge>
                           </div>
 
@@ -285,7 +285,7 @@ export default function Faucet() {
                                 </div>
                               ) : (
                                 <div className="flex items-center justify-center space-x-3">
-                                  <span>Send 0.1 SUI</span>
+                                  <span>Send SUI</span>
                                   <ArrowRight className="w-5 h-5" />
                                 </div>
                               )}

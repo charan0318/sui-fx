@@ -172,7 +172,7 @@ export default function Docs() {
   "message": "SUI sent successfully",
   "data": {
     "transactionId": "0xabc123...",
-    "amount": "100000000",
+    "amount": "1000000",
     "recipient": "0x1234..."
   }
 }`)}
@@ -187,7 +187,7 @@ export default function Docs() {
   "message": "SUI sent successfully",
   "data": {
     "transactionId": "0xabc123...",
-    "amount": "100000000",
+    "amount": "1000000",
     "recipient": "0x1234..."
   }
 }`}</code>

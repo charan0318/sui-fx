@@ -854,7 +854,7 @@ router.get('/activities',
  *                 $ref: '#/components/schemas/WalletAddress'
  *               amount:
  *                 type: string
- *                 example: "100000000"
+ *                 example: "1000000"
  *                 description: "Amount in mist (optional, uses default if not provided)"
  *     responses:
  *       200:

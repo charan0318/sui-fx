@@ -1,7 +1,7 @@
 {
   "name": "sui-fx",
   "version": "1.0.0",
-  "description": "🌊 SUI-FX - Professional Sui testnet faucet with modern web interface, Discord bot integration, and comprehensive developer tools",
+  "description": "🌊 SUI-FX - Production-ready Sui testnet faucet with zero downtime, professional UX, and enterprise-grade developer tools",
   "homepage": "https://github.com/charan0318/sui-fx",
   "repository": {
     "type": "git",
@@ -24,10 +24,13 @@
     "cryptocurrency",
     "discord-bot",
     "api",
-    "docker",
+    "zero-downtime",
+    "sqlite",
     "typescript",
     "react",
-    "nodejs"
+    "nodejs",
+    "enterprise",
+    "production-ready"
   ],
   "private": true,
   "workspaces": [

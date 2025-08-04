@@ -12,7 +12,7 @@ export const users = pgTable("users", {
 export const faucetRequests = pgTable("faucet_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   walletAddress: text("wallet_address").notNull(),
-  amount: text("amount").notNull().default("100000000"), // 0.1 SUI in mist
+  amount: text("amount").notNull().default("1000000"), // 0.001 SUI in mist
   transactionHash: text("transaction_hash"),
   status: text("status").notNull().default("pending"), // pending, success, failed
   ipAddress: text("ip_address").notNull(),
